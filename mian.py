@@ -1,15 +1,22 @@
 import tcod
 
-from actions import EscapeAction, MovementAction
+from engine import Engine
+from entity import Entity
 from input_handlers import EventHandler
+from procgen import generate_dungeon
+
 
 def main() -> None:
+
     screen_width = 80
     screen_height = 50
 
-    #Variables used to place player in center of screen
-    player_x = int(screen_width / 2)
-    player_y = int(screen_height / 2)
+    map_width = 80
+    map_height = 45
+
+    room_max_size = 10
+    room_min_size = 6
+    max_rooms = 30
 
     #Creates variable that is equal to the tileset load function for tcod.
     #Tells tcod which font to use for the tileset. 32 and 8 refers to amount of columns and rows in png file.
@@ -18,6 +25,21 @@ def main() -> None:
     )
 
     event_handler = EventHandler() #variable to hold data from EventHandler class
+
+    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', (255,255,255))
+    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '0', (255, 255, 0))
+    entities = {npc, player}
+
+    game_map = generate_dungeon(
+        max_rooms=max_rooms,
+        room_min_size=room_min_size,
+        room_max_size=room_max_size,
+        map_width=map_width,
+        map_height=map_height,
+        player=player
+    )
+
+    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player)
 
     #Creates the game screen
     with tcod.context.new_terminal(
@@ -31,29 +53,11 @@ def main() -> None:
 
         # Start of game loop
         while True:
-            root_console.print(x=player_x, y=player_y, string='@') #draws player @
+            engine.render(console=root_console, context=context)
 
-            context.present(root_console) #Function that updates screen and draws what is contained in root_console.
+            events = tcod.event.wait()
 
-            root_console.clear()
-
-            for event in tcod.event.wait(): #Waits for input (event) from player
-
-                #Sends event to proper input_handlers method and assigns the returned Action class to the variable.
-                action = event_handler.dispatch(event)
-
-                if action is None:
-                    continue
-
-                if isinstance(action, MovementAction):
-                    #Returns whether object (action) is instance of given class (MovementAction).
-                    # #If action is MovementAction it changes player x and y.
-                    player_x += action.dx
-                    player_y += action.dy
-
-                elif isinstance(action, EscapeAction):
-                    raise SystemExit()
-
+            engine.handle_events(events)
 
 if __name__ == '__main__':
     main()
