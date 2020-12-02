@@ -5,6 +5,7 @@ from typing import Iterator, List, Tuple, TYPE_CHECKING
 
 import tcod
 
+import entity_factories
 from game_map import GameMap
 import tile_types
 
@@ -42,6 +43,26 @@ class RectangularRoom:
         )
 
 
+def place_entities(
+        room: RectangularRoom, dungeon: GameMap, maximum_monsters: int,
+) -> None:
+    number_of_monsters = random.randint(0, maximum_monsters)
+    #Iterates between 0 and the value of maximum_monsters variable in main.py
+
+    for i in range(number_of_monsters):
+        #randomly places monsters in each room
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+
+        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+        #Checks to make sure there isn't already an enemy at the location for the new entity
+            #Generates specific enemy based on percentage chance
+            if random.random() < 0.8:
+                entity_factories.maint_bot.spawn(dungeon,x, y)
+            else:
+                entity_factories.sec_bot.spawn(dungeon, x, y)
+
+
 def tunnel_between(
         start: Tuple[int, int], end: Tuple[int, int] #int in Tuples are x, y points
 ) -> Iterator[Tuple[int, int]]:
@@ -71,10 +92,11 @@ def generate_dungeon(
     room_max_size: int,
     map_width: int,
     map_height: int,
+    max_monsters_per_room: int,
     player: Entity,
 ) -> GameMap:
     '''Generate a new dungeon map.'''
-    dungeon = GameMap(map_width, map_height)
+    dungeon = GameMap(map_width, map_height, entities=[player])
 
     rooms: List[RectangularRoom] = [] #rooms is keyed to a list of rooms that have been generated. Starts empty
 
@@ -103,6 +125,8 @@ def generate_dungeon(
             #Dig out a tunnel between this room and the previous one.
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.floor
+
+        place_entities(new_room, dungeon, max_monsters_per_room)
 
         #Finally, append the new room to the list.
         rooms.append(new_room)
