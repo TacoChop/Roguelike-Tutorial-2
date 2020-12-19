@@ -33,17 +33,17 @@ def new_tile(
 
 
 #SHROUD represents unexplored, unseen tiles.
-SHROUD = np.array((ord(' '), (255, 255, 255), (51, 13, 13)), dtype=graphic_dt)
+SHROUD = np.array((ord(' '), (255, 255, 255), (0,0,0)), dtype=graphic_dt)
 
 floor = new_tile(
     walkable=True,
     transpaernet=True,
-    dark=(ord(' '), (255, 255, 255), (87, 74, 23)),
-    light=(ord('.'), (46, 45, 43), (163, 137, 31)), #ord is character representing tile, then foreground color, then background color
+    dark=(ord(' '), (255, 255, 255), (77, 75, 75)),
+    light=(ord('.'), (46, 45, 43), (171, 169, 169)),   # ord is character representing tile, then foreground color, then background color
 )
 wall = new_tile(
     walkable=False,
     transpaernet=False,
-    dark=(ord(' '), (255, 255, 255), (10, 12, 36)),
-    light=(ord('#'), (138, 138, 145), (96, 97, 107)),
+    dark=(ord(' '), (255, 255, 255), (13, 14, 28)),
+    light=(ord('#'), (138, 138, 145), (66, 68, 82)),
 )
